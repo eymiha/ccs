@@ -1,0 +1,45 @@
+<!Doctype html>
+
+<style>
+  .c {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px #ffffff solid;
+  }
+
+  .unmolded {
+    border: 2px #ff0000 solid;
+  }
+</style>
+
+<script>
+  function CrossSpace(n, shape) {
+    let mold = (shape) => {
+      return (x) => {
+        return (Math.random() > 0.01) ? shape() : { 'unmolded': 'unmolded' }
+      }
+    }
+    this.c = Array.from({length: n}, mold(shape))
+  }
+
+  colorful = (x) => {
+    let red = Math.random()
+    let green = Math.random()
+    let blue = Math.random()
+    return { red, green, blue }
+  }
+
+  color_cvt = (c) => {
+    return ("0"+(Math.round(c.red  *255)).toString(16)).substr(-2)+
+           ("0"+(Math.round(c.green*255)).toString(16)).substr(-2)+
+           ("0"+(Math.round(c.blue *255)).toString(16)).substr(-2)
+  }
+
+  var cs = new CrossSpace(1000, colorful)
+  //console.log(cs)
+
+  cs.c.map((x) => {
+    document.write("<div class='c "+(x.unmolded || "")+"' style='background: #"+color_cvt(x)+"'))></div>")
+  })
+</script>
