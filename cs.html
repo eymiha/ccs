@@ -9,7 +9,16 @@
   }
 
   .unmolded {
-    border: 2px #ff0000 solid;
+    border-color: #ff0000;
+  }
+
+  .match {
+    border-color: #000000;
+  }
+
+  hr {
+    height: 20px;
+    visibility: hidden;
   }
 </style>
 
@@ -20,6 +29,9 @@
         return (Math.random() > 0.01) ? shape() : { 'unmolded': 'unmolded' }
       }
     }
+
+    this.induce = (quality) => { this.c.map(quality) }
+
     this.c = Array.from({length: n}, mold(shape))
   }
 
@@ -37,9 +49,30 @@
   }
 
   var cs = new CrossSpace(1000, colorful)
-  //console.log(cs)
+
+  bluegreen = (x) => {
+    if ((x.red < x.green/2) && (x.red < x.blue/2) && (x.green > 0.3) && (x.blue > 0.3)) {
+      let log = Math.log2(x.green/x.blue)
+      if (Math.abs(log+0.1) < 0.75) {
+        x.bluegreen = log
+      }
+    }
+  }
+
+  cs.induce(bluegreen)
+
+  is_flt = (c, q, t) => { return (c[q] > t) }
 
   cs.c.map((x) => {
-    document.write("<div class='c "+(x.unmolded || "")+"' style='background: #"+color_cvt(x)+"'))></div>")
+    let xf = is_flt(x, 'bluegreen', 0.5)
+    document.write("<div class='c "+(x.unmolded || "")+(xf ? " match" : "")+"' style='background: #"+color_cvt(x)+"'))></div>")
+  })
+  document.write("<hr/>")
+  cs.c.map((x) => {
+    let xf = is_flt(x, 'bluegreen', -2)
+    if (xf === true) {
+      console.log(x)
+      document.write("<div class='c' style='background: #"+color_cvt(x)+"'></div>")
+    }
   })
 </script>
