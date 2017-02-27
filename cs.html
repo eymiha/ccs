@@ -3,17 +3,21 @@
 <style>
   .c {
     display: inline-block;
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
     border: 2px #ffffff solid;
   }
 
   .unmolded {
-    border-color: #ff0000;
+    border-color: #777777;
   }
 
-  .match {
-    border-color: #000000;
+  .bluegreen {
+    border-color: #00aaaa;
+  }
+
+  .yellow {
+    border-color: #aaaa00;
   }
 
   hr {
@@ -32,14 +36,27 @@
 
     this.induce = (quality) => { this.c.map(quality) }
 
+    this.match = (seed, qualifier) => {
+      let reducer = (sum, x) => {
+        if (seed(x)) {
+          sum.push(x);
+        }
+        return sum;
+      }
+      let seeds = this.c.reduce(reducer, [])
+      console.log(seeds)
+    }
+
     this.c = Array.from({length: n}, mold(shape))
   }
+
+  var element = 0
 
   colorful = (x) => {
     let red = Math.random()
     let green = Math.random()
     let blue = Math.random()
-    return { red, green, blue }
+    return { element: element++, red, green, blue }
   }
 
   color_cvt = (c) => {
@@ -48,10 +65,8 @@
            ("0"+(Math.round(c.blue *255)).toString(16)).substr(-2)
   }
 
-  var cs = new CrossSpace(1000, colorful)
-
   bluegreen = (x) => {
-    if ((x.red < x.green/2) && (x.red < x.blue/2) && (x.green > 0.3) && (x.blue > 0.3)) {
+    if ((x.red < x.green/2) && (x.red < x.blue/2) && (x.green > 0.5) && (x.blue > x.green-0.2) && (x.red+x.green+x.blue > 1.25)) {
       let log = Math.log2(x.green/x.blue)
       if (Math.abs(log+0.1) < 0.75) {
         x.bluegreen = log
@@ -59,20 +74,52 @@
     }
   }
 
-  cs.induce(bluegreen)
+  bluegreens = (x) => {
+    return (x.bluegreen !== undefined) ? x : undefined
+  }
+
+  yellow = (x) => {
+    if ((x.blue < x.red/2) && (x.blue < x.green/2) && (x.green < x.red) && (x.green > x.red -0.15) && (x.red+x.green+x.blue > 1.25)) {
+      let log = Math.log2(x.green/x.red)
+      if (Math.abs(log) < 0.75) {
+        x.yellow = log
+      }
+    }
+  }
 
   is_flt = (c, q, t) => { return (c[q] > t) }
 
-  cs.c.map((x) => {
-    let xf = is_flt(x, 'bluegreen', 0.5)
-    document.write("<div class='c "+(x.unmolded || "")+(xf ? " match" : "")+"' style='background: #"+color_cvt(x)+"'))></div>")
-  })
-  document.write("<hr/>")
-  cs.c.map((x) => {
-    let xf = is_flt(x, 'bluegreen', -2)
-    if (xf === true) {
-      console.log(x)
-      document.write("<div class='c' style='background: #"+color_cvt(x)+"'></div>")
-    }
-  })
+  show = () => {
+    cs.c.map((x) => {
+      let bgf = is_flt(x, 'bluegreen', -2)
+      let by = is_flt(x, 'yellow', -2)
+      if (!bgf && !by) {
+        document.write("<div class='c "+(x.unmolded || "")+"' style='background: #"+color_cvt(x)+"'))></div>")
+      }
+      //document.write("<div class='c "+(x.unmolded || "")+(bgf ? " bluegreen" : "")+(by ? " yellow" : "")+"' style='background: #"+color_cvt(x)+"'))></div>")
+    })
+    document.write("<hr/>")
+    cs.c.map((x) => {
+      let xf = is_flt(x, 'bluegreen', -2)
+      if (xf === true) {
+        console.log(x)
+        document.write("<div class='c' style='background: #"+color_cvt(x)+"'></div>")
+      }
+    })
+    document.write("<hr/>")
+    cs.c.map((x) => {
+      let xf = is_flt(x, 'yellow', -2)
+      if (xf === true) {
+        console.log(x)
+        document.write("<div class='c' style='background: #"+color_cvt(x)+"'></div>")
+      }
+    })
+  }
+
+  var cs = new CrossSpace(1000, colorful)
+  let bluegreen_objects = cs.induce(bluegreen)
+  let yellow_objects = cs.induce(yellow)
+  cs.match("pair", { bluegreen_objects, yellow_objects })
+  show()
+
 </script>
